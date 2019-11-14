@@ -235,6 +235,17 @@ yy.Op.prototype.toString = function() {
 	if (this.op === 'IN' || this.op === 'NOT IN') {
 		return this.left.toString() + ' ' + this.op + ' (' + this.right.toString() + ')';
 	}
+	if (this.op === 'BETWEEN' || this.op === 'NOT BETWEEN') {
+		return (
+			this.left.toString() +
+			' ' +
+			this.op +
+			' ' +
+			this.right1.toString() +
+			' AND ' +
+			this.right2.toString()
+		);
+	}
 	if (this.allsome) {
 		return (
 			this.left.toString() +
@@ -291,7 +302,11 @@ yy.Op.prototype.toType = function(tableid) {
 	if (['||'].indexOf(this.op) > -1) {
 		return 'string';
 	}
+
 	if (this.op === '+') {
+		if (alasql.options.useDBType === 'mysql') {
+			return 'number';
+		}
 		if (this.left.toType(tableid) === 'string' || this.right.toType(tableid) === 'string') {
 			return 'string';
 		}
@@ -1078,7 +1093,7 @@ yy.AggrValue.prototype.findAggregator = function(query) {
 
 yy.AggrValue.prototype.toType = function() {
 	if (
-		['SUM', 'COUNT', 'AVG', 'MIN', 'MAX', 'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) >
+		['SUM', 'COUNT', 'AVG',  'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) >
 		-1
 	) {
 		return 'number';
@@ -1088,10 +1103,13 @@ yy.AggrValue.prototype.toType = function() {
 		return 'array';
 	}
 
-	if (['FIRST', 'LAST'].indexOf(this.aggregatorid) > -1) {
-		return this.expression.toType();
+	if (['MIN', 'MAX', 'FIRST', 'LAST'].indexOf(this.aggregatorid) > -1) {
+		if (this.expression.toType) {
+			return this.expression.toType();
+		}
+		
 	}
-
+	return 'unknown';
 	// todo: implement default;
 };
 

@@ -25,8 +25,8 @@
 
 N(['](\\.|[^']|\\\')*?['])+             return 'NSTRING'
 X(['](\\.|[^']|\\\')*?['])+             return 'NSTRING'
-(['](\\.|[^']|\\\')*?['])+              return 'STRING'
-(["](\\.|[^"]|\\\")*?["])+              return 'STRING'
+(['](\\.|[^']|\\\')*?['])+              return 'SINGLE_STRING'
+(["](\\.|[^"]|\\\")*?["])+              return 'DOUBLE_STRING'
 
 
 "--"(.*?)($|\r\n|\r|\n)							return /* its a COMMENT */
@@ -160,11 +160,16 @@ DATABASE(S)?									return 'DATABASE'
 'KEY'											return 'KEY'
 'LAST'											return 'LAST'
 'LET'											return 'LET'
-'LEFT'											return 'LEFT'
 'LIKE'											return 'LIKE'
 'LIMIT'											return 'LIMIT'
 'MATCHED'										return 'MATCHED'
 'MATRIX'										return 'MATRIX'
+
+'RIGHT'(\s+)?'('                                return 'RIGHTFN'
+'LEFT'(\s+)?'('  								return 'LEFTFN'
+
+'RIGHT'                                        	return 'RIGHT'
+'LEFT'											return 'LEFT'
 
 /*"MAX"											return 'MAX'*/
 /*"MIN"											return 'MIN'*/
@@ -218,7 +223,7 @@ DATABASE(S)?									return 'DATABASE'
 'RESTORE'                                       return 'RESTORE'
 'RETURN'                                       	return 'RETURN'
 'RETURNS'                                       return 'RETURN'
-'RIGHT'                                        	return 'RIGHT'
+
 'ROLLBACK'										return 'ROLLBACK'
 'ROLLUP'										return 'ROLLUP'
 'ROW'											return 'ROW'
@@ -315,7 +320,7 @@ SETS                                        	return 'SET'
 
 '~'												return 'TILDA'
 
-[a-zA-Z_][a-zA-Z_0-9]*                     		return 'LITERAL'
+[\u4E00-\u9FA5A-Za-z_][\u4E00-\u9FA5A-Za-z_0-9]*                     		return 'LITERAL'
 
 <<EOF>>               							return 'EOF'
 .												return 'INVALID'
@@ -531,9 +536,19 @@ Select
 
 PivotClause
 	: PIVOT LPAR Expression FOR Literal PivotClause2? RPAR AsLiteral?
-		{ $$ = {pivot:{expr:$3, columnid:$5, inlist:$6, as:$8}}; }
+		{ 
+			$$ = {pivot:{expr:$3, columnid:$5, inlist:$6, as:$8}}; 
+			if (yy.__setLocationInfo) {
+				yy.__setLocationInfo($$, 'pivot');
+			}
+		}
 	| UNPIVOT LPAR Literal FOR Literal IN LPAR ColumnsList RPAR RPAR AsLiteral?
-		{ $$ = {unpivot:{tocolumnid:$3, forcolumnid:$5, inlist:$8, as:$11}}; }
+		{ 
+			$$ = {unpivot:{tocolumnid:$3, forcolumnid:$5, inlist:$8, as:$11}}; 
+			if (yy.__setLocationInfo) {
+				yy.__setLocationInfo($$, 'pivot');
+			}
+		}
 	;
 
 PivotClause2
@@ -564,7 +579,14 @@ AsPart
 
 RemoveClause
 	: REMOVE COLUMN? RemoveColumnsList
-		{ $$ = {removecolumns:$3}; } 
+		{ 
+			$$ = {
+				removecolumns:$3
+			}; 
+			if (yy.__setLocationInfo) {
+				yy.__setLocationInfo($$, 'remove');
+			}
+		} 
 	;
 
 RemoveColumnsList
@@ -579,6 +601,20 @@ RemoveColumn
 		{ $$ = $1; }
 	| LIKE StringValue
 		{ $$ = {like:$2}; }	
+	;
+
+STRING
+	: SINGLE_STRING
+		{ 
+			$$ = $1; 
+		}
+	| DOUBLE_STRING
+		{ 
+			$$ = $1; 
+			if (yy.parseError2) {
+				yy.parseError2('error.doubleString', this._$);
+			}
+		}
 	;
 
 ArrowDot
@@ -793,9 +829,19 @@ SelectModifier
 
 TopClause
 	: TOP NumValue PERCENT?
-		{ $$ = {top: $2, percent:(typeof $3 != 'undefined'?true:undefined)}; }
+		{ 
+			$$ = {top: $2, percent:(typeof $3 != 'undefined'?true:undefined)}; 
+			if (yy.__setLocationInfo) {
+				yy.__setLocationInfo($$, 'top');
+			}
+		}
 	| TOP LPAR NumValue RPAR
-		{ $$ = {top: $3}; }
+		{ 
+			$$ = {top: $3}; 
+			if (yy.__setLocationInfo) {
+				yy.__setLocationInfo($$, 'top');
+			}
+		}
 	| { $$ = undefined; }
 	;
 
@@ -1012,11 +1058,11 @@ JoinModeMode
 	| LEFT JOIN
 		{ $$ = "LEFT"; }
 	| LEFT OUTER JOIN
-		{ $$ = "LEFT"; }
+		{ $$ = "LEFT OUTER"; }
 	| RIGHT JOIN
 		{ $$ = "RIGHT"; }
 	| RIGHT OUTER JOIN
-		{ $$ = "RIGHT"; }
+		{ $$ = "RIGHT OUTER"; }
 	| OUTER JOIN
 		{ $$ = "OUTER"; }
 	| FULL OUTER JOIN
@@ -1032,8 +1078,8 @@ JoinModeMode
 OnClause
 	: ON Expression
 		{ $$ = {on: $2}; }
-	| USING ColumnsList
-		{ $$ = {using: $2}; }
+	| USING LPAR ColumnsList RPAR
+		{ $$ = {using: $3}; }
 	|
 		{ $$ = undefined; }
 	;
@@ -1369,6 +1415,10 @@ FuncValue
 			    $$ = new yy.FuncValue({funcid: funcid, args: exprlist}); 
 			};
 		}
+	| RIGHTFN ExprList RPAR
+		{ $$ = new yy.FuncValue({ funcid: 'RIGHT', args: $2});  }
+	| LEFTFN ExprList RPAR
+		{ $$ = new yy.FuncValue({ funcid: 'LEFT', args: $2});  }
 	| Literal LPAR RPAR
 		{ $$ = new yy.FuncValue({ funcid: $1 }) }
 	| IF LPAR ExprList RPAR
@@ -3012,6 +3062,7 @@ Reindex
 
 NonReserved
 	: A|ABSENT|ABSOLUTE|ACCORDING|ACTION|ADA|ADD|ADMIN|AFTER|ALWAYS|ASC|ASSERTION|ASSIGNMENT|ATTRIBUTE|ATTRIBUTES|BASE64|BEFORE|BERNOULLI|BLOCKED|BOM|BREADTH|C|CASCADE|CATALOG|CATALOG_NAME|CHAIN|CHARACTERISTICS|CHARACTERS|CHARACTER_SET_CATALOG|CHARACTER_SET_NAME|CHARACTER_SET_SCHEMA|CLASS_ORIGIN|COBOL|COLLATION|COLLATION_CATALOG|COLLATION_NAME|COLLATION_SCHEMA|COLUMNS|COLUMN_NAME|COMMAND_FUNCTION|COMMAND_FUNCTION_CODE|COMMITTED|CONDITION_NUMBER|CONNECTION|CONNECTION_NAME|CONSTRAINTS|CONSTRAINT_CATALOG|CONSTRAINT_NAME|CONSTRAINT_SCHEMA|CONSTRUCTOR|CONTENT|CONTINUE|CONTROL|CURSOR_NAME|DATA|DATETIME_INTERVAL_CODE|DATETIME_INTERVAL_PRECISION|DB|DEFAULTS|DEFERRABLE|DEFERRED|DEFINED|DEFINER|DEGREE|DEPTH|DERIVED|DESC|DESCRIPTOR|DIAGNOSTICS|DISPATCH|DOCUMENT|DOMAIN|DYNAMIC_FUNCTION|DYNAMIC_FUNCTION_CODE|EMPTY|ENCODING|ENFORCED|EXCLUDE|EXCLUDING|EXPRESSION|FILE|FINAL|FIRST|FLAG|FOLLOWING|FORTRAN|FOUND|FS|G|GENERAL|GENERATED|GO|GOTO|GRANTED|HEX|HIERARCHY|ID|IGNORE|IMMEDIATE|IMMEDIATELY|IMPLEMENTATION|INCLUDING|INCREMENT|INDENT|INITIALLY|INPUT|INSTANCE|INSTANTIABLE|INSTEAD|INTEGRITY|INVOKER|ISOLATION|K|KEY|KEY_MEMBER|KEY_TYPE|LAST|LENGTH|LEVEL|LIBRARY|LIMIT|LINK|LOCATION|LOCATOR|M|MAP|MAPPING|MATCHED|MAXVALUE|MESSAGE_LENGTH|MESSAGE_OCTET_LENGTH|MESSAGE_TEXT|MINVALUE|MORE|MUMPS|NAME|NAMES|NAMESPACE|NESTING|NEXT|NFC|NFD|NFKC|NFKD|NIL|NORMALIZED|NULLABLE|NULLS|NUMBER|OBJECT|OCTETS|OFF|OPTION|OPTIONS|ORDERING|ORDINALITY|OTHERS|OUTPUT|OVERRIDING|P|PAD|PARAMETER_MODE|PARAMETER_NAME|PARAMETER_ORDINAL_POSITION|PARAMETER_SPECIFIC_CATALOG|PARAMETER_SPECIFIC_NAME|PARAMETER_SPECIFIC_SCHEMA|PARTIAL|PASCAL|PASSING|PASSTHROUGH|PATH|PERMISSION|PLACING|PLI|PRECEDING|PRESERVE|PRIOR|PRIVILEGES|PUBLIC|READ|RECOVERY|RELATIVE|REPEATABLE|REQUIRING|RESPECT|RESTART|RESTORE|RESTRICT|RETURNED_CARDINALITY|RETURNED_LENGTH|RETURNED_OCTET_LENGTH|RETURNED_SQLSTATE|RETURNING|ROLE|ROUTINE|ROUTINE_CATALOG|ROUTINE_NAME|ROUTINE_SCHEMA|ROW_COUNT|SCALE|SCHEMA|SCHEMA_NAME|SCOPE_CATALOG|SCOPE_NAME|SCOPE_SCHEMA|SECTION|SECURITY|SELECTIVE|SELF|SEQUENCE|SERIALIZABLE|SERVER|SERVER_NAME|SESSION|SETS|SIMPLE|SIZE|SOURCE|SPACE|SPECIFIC_NAME|STANDALONE|STATE|STATEMENT|STRIP|STRUCTURE|STYLE|SUBCLASS_ORIGIN|T|TABLE_NAME|TEMPORARY|TIES|TOKEN|TOP_LEVEL_COUNT|TRANSACTION|TRANSACTIONS_COMMITTED|TRANSACTIONS_ROLLED_BACK|TRANSACTION_ACTIVE|TRANSFORM|TRANSFORMS|TRIGGER_CATALOG|TRIGGER_NAME|TRIGGER_SCHEMA|TYPE|UNBOUNDED|UNCOMMITTED|UNDER|UNLINK|UNNAMED|UNTYPED|URI|USAGE|USER_DEFINED_TYPE_CATALOG|USER_DEFINED_TYPE_CODE|USER_DEFINED_TYPE_NAME|USER_DEFINED_TYPE_SCHEMA|VALID|VERSION|VIEW|WHITESPACE|WORK|WRAPPER|WRITE|XMLDECLARATION|XMLSCHEMA|YES|ZONE;
+
 
 %%
 

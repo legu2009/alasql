@@ -37,7 +37,7 @@ yy.Select.prototype.toString = function() {
 	s += this.columns
 		.map(function(col) {
 			var s;
-			s = col.toString();
+			s = col.toString(true);
 			if (typeof col.as !== 'undefined') {
 				s += ' AS ' + col.as;
 			}

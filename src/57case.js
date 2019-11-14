@@ -19,6 +19,7 @@ yy.CaseValue.prototype.toString = function() {
 			})
 			.join();
 	}
+	if (this.elses) s += ' else ' + this.elses.toString();
 	s += ' END';
 	return s;
 };

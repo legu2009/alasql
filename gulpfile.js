@@ -67,7 +67,7 @@ gulp.task('js-merge', function() {
 			'./src/15utility.js',
 			'./src/16comments.js',
 			'./src/17alasql.js',
-			'./src/18promise.js',
+			//   './src/18promise.js',
 			'./src/20database.js',
 			'./src/21transaction.js',
 			//    './src/22store.js',
@@ -159,13 +159,13 @@ gulp.task('js-merge', function() {
 		.pipe(replace(/PACKAGE_VERSION_NUMBER/g, version)) // Please set version in package.json file
 		.pipe(gulp.dest('./dist'))
 
-		.pipe(dereserve()) // Support IE8
+		//.pipe(dereserve()) // Support IE8
 		.pipe(replace(/\/\/\*not-for-browser\/\*/g, '/*not-for-browser/*')) // Remove things not for browser build
 		.pipe(replace(/\/\*only-for-browser\/\*/g, '//*only-for-browser/*')) // Reveal things only for browser build
 		.pipe(rename('alasql.js'))
 		.pipe(gulp.dest('./dist'))
 		.pipe(rename('alasql.min.js'))
-		.pipe(
+		/*.pipe(
 			uglify({
 				output: {
 					comments: function(a, b) {
@@ -174,7 +174,7 @@ gulp.task('js-merge', function() {
 				},
 			})
 		) // leave first line of comment if starts with a "!"
-		.pipe(gulp.dest('./dist'));
+		.pipe(gulp.dest('./dist'))*/;
 });
 
 gulp.task('jison-compile', function() {

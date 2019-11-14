@@ -5,22 +5,52 @@
 // (c) 2014, Andrey Gershun
 //
 */
+function isDateOprFunc(funcid) {
+	return {DATE_SUB: 'dataOp', DATE_ADD: 'dataOp', DATEDIFF: 'dataOp'}[funcid.toUpperCase()] || '';
+}
 
 yy.FuncValue = function(params) {
 	return yy.extend(this, params);
 };
 yy.FuncValue.prototype.toString = function(dontas) {
 	var s = '';
+	var funcid = this.funcid;
+	if (isDateOprFunc(this.pfuncid || '') && funcid.toUpperCase() === 'INTERVAL') {
+		s += this.funcid + ' ';
+		if (this.args && this.args.length > 0) {
+			s += this.args
+				.map(function(arg, index) {
+					if (index === 0) {
+						return arg.toString();
+					} else if (index === 1) {
+						if (arg instanceof yy.StringValue) {
+							return arg.value;
+						}
+						return arg.toString();
+					}
+				})
+				.join(' ');
+		}
+		if (this.as && !dontas) s += ' AS ' + this.as.toString();
+		return s;
+	}
 
-	if (alasql.fn[this.funcid]) s += this.funcid;
-	else if (alasql.aggr[this.funcid]) s += this.funcid;
-	else if (alasql.stdlib[this.funcid.toUpperCase()] || alasql.stdfn[this.funcid.toUpperCase()])
+	if (alasql.fn[funcid]) {
+		s += funcid;
+	} else if (alasql.aggr[funcid]) {
+		s += funcid;
+	} else if (alasql.stdlib[funcid.toUpperCase()] || alasql.stdfn[funcid.toUpperCase()]) {
 		s += this.funcid.toUpperCase();
+	} else {
+		console.log('function not support', funcid);
+		s += funcid;
+	}
 
 	s += '(';
 	if (this.args && this.args.length > 0) {
 		s += this.args
 			.map(function(arg) {
+				arg.pfuncid = funcid;
 				return arg.toString();
 			})
 			.join(',');
@@ -203,6 +233,29 @@ stdlib.MIN = stdlib.LEAST = function() {
 stdlib.SUBSTRING = stdlib.SUBSTR = stdlib.MID = function(a, b, c) {
 	if (arguments.length == 2) return und(a, 'y.substr(' + b + '-1)');
 	else if (arguments.length == 3) return und(a, 'y.substr(' + b + '-1,' + c + ')');
+};
+
+stdlib.LEFT = function(str, len) {
+	return und(str, 'y.substr(0, ' + len + ')');
+};
+
+stdlib.RIGHT = function(str, len) {
+	return und(str, 'y.substr(-1 * ' + len + ',' + len + ')');
+};
+
+stdlib.RIGHT = function(str, len) {
+	return und(str, 'y.substr(-1 * ' + len + ',' + len + ')');
+};
+
+stdlib.SUBSTRING_INDEX = function(str, code, len) {
+	if (len > 0) {
+		return und(str, "y.split('" + code + "').splice(0, " + len + ").join('" + code + "')");
+	} else {
+		return und(
+			str,
+			"y.split('" + code + "').splice(" + len + ', ' + len * -1 + ").join('" + code + "')"
+		);
+	}
 };
 
 stdfn.REGEXP_LIKE = function(a, b, c) {
