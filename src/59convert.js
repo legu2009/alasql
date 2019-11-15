@@ -10,7 +10,8 @@ yy.Convert = function(params) {
 	return yy.extend(this, params);
 };
 yy.Convert.prototype.toString = function() {
-	if (this.useDBType === 'mysql') {
+	var useDBType = alasql.options.useDBType || this.useDBType;
+	if (useDBType === 'mysql') {
 		var s = 'CONVERT(';
 		s += this.expression.toString() + ',' + this.dbtypeid;
 		if (typeof this.dbsize != 'undefined') {

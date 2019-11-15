@@ -12,10 +12,114 @@ function isDateOprFunc(funcid) {
 yy.FuncValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.FuncValue.prototype.toType = function () {
-	var funcid = this.funcid;
 
-}
+yy.FuncValue.prototype.toType = function() {
+	var funcid = this.funcid.toUpperCase();
+	if (
+		[
+			'ABS',
+			'ACOS',
+			'ASCII',
+			'ASIN',
+			'ATAN',
+			'ATAN2',
+			'ATAN',
+			'AVG',
+			'BENCHMARK',
+			'BIT_AND',
+			'BIT_COUNT',
+			'BIT_LENGTH',
+			'BIT_OR',
+			'BIT_XOR',
+			'CEIL',
+			'CEILING',
+			'CHAR_LENGTH',
+			'CHARACTER_LENGTH',
+			'COERCIBILITY',
+			'CONNECTION_ID',
+			'COS',
+			'COT',
+			'COUNT',
+			'COUNT',
+			'CRC32',
+			'CUME_DIST',
+			'CURRENT_ROLE',
+			'CURRENT_USER',
+			'DATEDIFF',
+			'DAY',
+			'DAYOFMONTH',
+			'DAYOFWEEK',
+			'DAYOFYEAR',
+			'DIV',
+		].indexOf(funcid) > -1
+	) {
+		return 'number';
+	}
+
+	if (
+		[
+			'ADDDATE',
+			'ADDTIME',
+			'CONVERT_TZ',
+			'CURDATE',
+			'CURRENT_DATE',
+			'CURRENT_TIME',
+			'CURRENT_TIMESTAMP',
+			'CURTIME',
+			'DATABASE',
+			'DATE',
+			'DATE_ADD',
+			'DATE_FORMAT',
+			'DATE_SUB',
+		].indexOf(funcid) > -1
+	) {
+		return 'date';
+	}
+
+	if (
+		[
+			'AES_DECRYPT',
+			'AES_ENCRYPT',
+			'ASYMMETRIC_DECRYPT',
+			'ASYMMETRIC_DERIVE',
+			'ASYMMETRIC_ENCRYPT',
+			'ASYMMETRIC_SIGN',
+			'BIN',
+			'BIN_TO_UUID',
+			'BINARY',
+			'CHAR',
+			'CHARSET',
+			'COLLATION',
+			'COMPRESS',
+			'CONCAT',
+			'CONCAT_WS',
+			'CONV',
+			'CONCAT_WS',
+			'CREATE_ASYMMETRIC_PRIV_KEY',
+			'CREATE_ASYMMETRIC_PUB_KEY',
+			'DAYNAME',
+			'DECODE',
+			'DES_DECRYPT',
+			'DES_ENCRYPT',
+		].indexOf(funcid) > -1
+	) {
+		return 'string';
+	}
+
+	if (['AND', 'ASYMMETRIC_VERIFY'].indexOf(funcid) > -1) {
+		return 'booble';
+	}
+
+	if (
+		['ANY_VALUE', 'COALESCE', 'CONVERT', 'DEFAULT'].indexOf(funcid) > -1 &&
+		this.args &&
+		this.args[0]
+	) {
+		return this.args[0].toType();
+	}
+
+	return 'unknown';
+};
 yy.FuncValue.prototype.toString = function(dontas) {
 	var s = '';
 	var funcid = this.funcid;
