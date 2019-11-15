@@ -10,6 +10,18 @@ yy.Convert = function(params) {
 	return yy.extend(this, params);
 };
 yy.Convert.prototype.toString = function() {
+	if (this.useDBType === 'mysql') {
+		var s = 'CONVERT(';
+		s += this.expression.toString() + ',' + this.dbtypeid;
+		if (typeof this.dbsize != 'undefined') {
+			s += '(' + this.dbsize;
+			if (this.dbprecision) s += ',' + this.dbprecision;
+			s += ')';
+		}
+		if (this.style) s += ',' + this.style;
+		s += ')';
+		return s;
+	}
 	var s = 'CONVERT(';
 	s += this.dbtypeid;
 	if (typeof this.dbsize != 'undefined') {

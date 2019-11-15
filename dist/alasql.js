@@ -1,7 +1,7 @@
-//! AlaSQL v0.5.1-develop-882f0b87undefined | © 2014-2018 Andrey Gershun & Mathias Rangel Wulff | License: MIT
+//! AlaSQL v0.5.1-develop-08be58eaundefined | © 2014-2018 Andrey Gershun & Mathias Rangel Wulff | License: MIT
 /*
 @module alasql
-@version 0.5.1-develop-882f0b87undefined
+@version 0.5.1-develop-08be58eaundefined
 
 AlaSQL - JavaScript SQL database
 © 2014-2016	Andrey Gershun & Mathias Rangel Wulff
@@ -142,7 +142,7 @@ var alasql = function(sql, params, cb, scope) {
 	Current version of alasql 
  	@constant {string} 
 */
-alasql.version = '0.5.1-develop-882f0b87undefined';
+alasql.version = '0.5.1-develop-08be58eaundefined';
 
 /**
 	Debug flag
@@ -10388,7 +10388,11 @@ yy.Op.prototype.toType = function(tableid) {
 	if (['||'].indexOf(this.op) > -1) {
 		return 'string';
 	}
+
 	if (this.op === '+') {
+		if (alasql.options.useDBType === 'mysql') {
+			return 'number';
+		}
 		if (this.left.toType(tableid) === 'string' || this.right.toType(tableid) === 'string') {
 			return 'string';
 		}
@@ -10965,6 +10969,10 @@ yy.Column.prototype.toString = function(dontas) {
 	return s;
 };
 
+yy.Column.prototype.toType = function(dontas) {
+	return 'unknown';
+};
+
 yy.Column.prototype.toJS = function(context, tableid, defcols) {
 
 	var s = '';
@@ -11108,10 +11116,7 @@ yy.AggrValue.prototype.findAggregator = function(query) {
 };
 
 yy.AggrValue.prototype.toType = function() {
-	if (
-		['SUM', 'COUNT', 'AVG', 'MIN', 'MAX', 'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) >
-		-1
-	) {
+	if (['SUM', 'COUNT', 'AVG', 'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) > -1) {
 		return 'number';
 	}
 
@@ -11119,10 +11124,12 @@ yy.AggrValue.prototype.toType = function() {
 		return 'array';
 	}
 
-	if (['FIRST', 'LAST'].indexOf(this.aggregatorid) > -1) {
-		return this.expression.toType();
+	if (['MIN', 'MAX', 'FIRST', 'LAST'].indexOf(this.aggregatorid) > -1) {
+		if (this.expression.toType) {
+			return this.expression.toType();
+		}
 	}
-
+	return 'unknown';
 	// todo: implement default;
 };
 
@@ -11815,6 +11822,15 @@ yy.CaseValue.prototype.toString = function() {
 	if (this.elses) s += ' else ' + this.elses.toString();
 	s += ' END';
 	return s;
+};
+
+yy.CaseValue.prototype.toType = function() {
+	if (this.whens && this.whens.length > 0) {
+		return this.whens[0].then.toType();
+	}
+	if (this.elses) {
+		return this.elses.toType();
+	}
 };
 
 yy.CaseValue.prototype.findAggregator = function(query) {

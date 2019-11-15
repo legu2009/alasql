@@ -12,6 +12,10 @@ function isDateOprFunc(funcid) {
 yy.FuncValue = function(params) {
 	return yy.extend(this, params);
 };
+yy.FuncValue.prototype.toType = function () {
+	var funcid = this.funcid;
+
+}
 yy.FuncValue.prototype.toString = function(dontas) {
 	var s = '';
 	var funcid = this.funcid;

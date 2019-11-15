@@ -1331,6 +1331,10 @@ CastClause
 		{ $$ = new yy.Convert({expression:$5}) ; yy.extend($$,$3) ; }
 	| CONVERT LPAR ColumnType COMMA Expression COMMA NUMBER RPAR
 		{ $$ = new yy.Convert({expression:$5, style:$7}) ; yy.extend($$,$3) ; }
+	| CONVERT LPAR Expression COMMA ColumnType RPAR
+		{ $$ = new yy.Convert({expression:$3, useDBType: 'mysql'}) ; yy.extend($$,$5) ; }
+	| CONVERT LPAR Expression COMMA ColumnType COMMA NUMBER RPAR
+		{ $$ = new yy.Convert({expression:$3, style:$7, useDBType: 'mysql'}) ; yy.extend($$,$5) ; }
 	;
 
 PrimitiveValue

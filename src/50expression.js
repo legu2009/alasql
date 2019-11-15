@@ -907,6 +907,10 @@ yy.Column.prototype.toString = function(dontas) {
 	return s;
 };
 
+yy.Column.prototype.toType = function(dontas) {
+	return 'unknown';
+};
+
 yy.Column.prototype.toJS = function(context, tableid, defcols) {
 	/*/*
 //	var s = this.value;
@@ -1092,10 +1096,7 @@ yy.AggrValue.prototype.findAggregator = function(query) {
 };
 
 yy.AggrValue.prototype.toType = function() {
-	if (
-		['SUM', 'COUNT', 'AVG',  'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) >
-		-1
-	) {
+	if (['SUM', 'COUNT', 'AVG', 'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) > -1) {
 		return 'number';
 	}
 
@@ -1107,7 +1108,6 @@ yy.AggrValue.prototype.toType = function() {
 		if (this.expression.toType) {
 			return this.expression.toType();
 		}
-		
 	}
 	return 'unknown';
 	// todo: implement default;

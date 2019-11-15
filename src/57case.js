@@ -24,6 +24,15 @@ yy.CaseValue.prototype.toString = function() {
 	return s;
 };
 
+yy.CaseValue.prototype.toType = function() {
+	if (this.whens && this.whens.length > 0) {
+		return this.whens[0].then.toType();
+	}
+	if (this.elses) {
+		return this.elses.toType();
+	}
+};
+
 yy.CaseValue.prototype.findAggregator = function(query) {
 	//	console.log(this.toString());
 	if (this.expression && this.expression.findAggregator) this.expression.findAggregator(query);
