@@ -67,7 +67,7 @@ yy.Select.prototype.toString = function() {
 					ss += jn.joinmode + ' ';
 				}
 				if (jn.table) {
-					ss += 'JOIN ' + jn.table.toString();
+					ss += 'JOIN ' + jn.table.toString(!!jn.as);
 				} else if (jn.select) {
 					ss += 'JOIN (' + jn.select.toString() + ')';
 				} else if (jn instanceof alasql.yy.Apply) {

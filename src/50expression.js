@@ -198,7 +198,7 @@ yy.Join.prototype.toString = function() {
 yy.Table = function(params) {
 	return yy.extend(this, params);
 };
-yy.Table.prototype.toString = function() {
+yy.Table.prototype.toString = function(dontas) {
 	var s = this.tableid;
 	//	if(this.joinmode)
 	if (this.databaseid) {
@@ -797,7 +797,8 @@ yy.UniOp.prototype.toString = function() {
 		s = this.op + this.right.toString();
 	}
 	if (this.op === 'NOT') {
-		s = this.op + '(' + this.right.toString() + ')';
+		//s = this.op + '(' + this.right.toString() + ')';
+		s = this.op + this.right.toString() ;
 	}
 	if (this.op === null) {
 		s = '(' + this.right.toString() + ')';

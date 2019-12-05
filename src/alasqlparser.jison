@@ -1419,6 +1419,8 @@ FuncValue
 			    $$ = new yy.FuncValue({funcid: funcid, args: exprlist}); 
 			};
 		}
+	| TRUNCATE LPAR ExprList RPAR
+		{ $$ = new yy.FuncValue({ funcid: 'TRUNCATE', args: $3});  }
 	| RIGHTFN ExprList RPAR
 		{ $$ = new yy.FuncValue({ funcid: 'RIGHT', args: $2});  }
 	| LEFTFN ExprList RPAR
