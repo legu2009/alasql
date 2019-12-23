@@ -17,7 +17,7 @@ yy.CaseValue.prototype.toString = function() {
 			.map(function(w) {
 				return ' WHEN ' + w.when.toString() + ' THEN ' + w.then.toString();
 			})
-			.join();
+			.join(' ');
 	}
 	if (this.elses) s += ' else ' + this.elses.toString();
 	s += ' END';

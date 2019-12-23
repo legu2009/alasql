@@ -155,8 +155,12 @@ yy.FuncValue.prototype.toString = function(dontas) {
 	}
 
 	s += '(';
-	if (this.args && this.args.length > 0) {
-		s += this.args
+	var args = this.args;
+	if (alasql.options.useDBType === 'mysql' && this.funcid.toUpperCase() === 'DATEDIFF') {
+		args = [this.args[1], this.args[2]];
+	}
+	if (args && args.length > 0) {
+		s += args
 			.map(function(arg) {
 				arg.pfuncid = funcid;
 				return arg.toString();

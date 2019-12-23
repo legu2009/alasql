@@ -15,12 +15,13 @@
 yy.Select = function(params) {
 	return yy.extend(this, params);
 };
-yy.Select.prototype.toString = function() {
-	var s;
-	s = '';
+yy.Select.prototype.toString = function(unionType) {
+	var s = '',
+		tmp = '';
 	if (this.explain) {
-		s += 'EXPLAIN ';
+		tmp = 'EXPLAIN ';
 	}
+
 	s += 'SELECT ';
 	if (this.modifier) {
 		s += this.modifier + ' ';
@@ -51,6 +52,9 @@ yy.Select.prototype.toString = function() {
 				.map(function(f) {
 					var ss;
 					ss = f.toString();
+					if (f instanceof yy.Select) {
+						ss = ' (' + ss + ') ';
+					}
 					if (f.as) {
 						ss += ' AS ' + f.as;
 					}
@@ -118,23 +122,36 @@ yy.Select.prototype.toString = function() {
 	if (this.offset) {
 		s += ' OFFSET ' + this.offset.value;
 	}
+
+	if (this.union || this.unionall || this.except || this.intersect || unionType) {
+		if (this.order && this.order.length > 0) {
+			s = '(' + s + ')';
+		}
+	}
+
 	if (this.union) {
-		s += ' UNION ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.union.toString();
+		s +=
+			' UNION ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.union.toString('union');
 	}
 	if (this.unionall) {
 		s +=
-			' UNION ALL ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.unionall.toString();
+			' UNION ALL ' +
+			(this.corresponding ? 'CORRESPONDING ' : '') +
+			this.unionall.toString('unionall');
 	}
 	if (this.except) {
-		s += ' EXCEPT ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.except.toString();
+		s +=
+			' EXCEPT ' +
+			(this.corresponding ? 'CORRESPONDING ' : '') +
+			this.except.toString('except');
 	}
 	if (this.intersect) {
 		s +=
 			' INTERSECT ' +
 			(this.corresponding ? 'CORRESPONDING ' : '') +
-			this.intersect.toString();
+			this.intersect.toString('intersect');
 	}
-	return s;
+	return tmp + s;
 };
 
 /**

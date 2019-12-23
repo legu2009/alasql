@@ -100,6 +100,10 @@ COLUMNS 										return 'COLUMN'
 "CONVERT"										return 'CONVERT'
 "CORRESPONDING"									return 'CORRESPONDING'
 "COUNT"											return 'COUNT'
+
+CREATE\s+TEMP                           		return 'CREATE_TEMP'
+CREATE\s+TEMPORARY                           	return 'CREATE_TEMP'
+
 'CREATE'										return 'CREATE'
 "CROSS"											return 'CROSS'
 'CUBE'											return 'CUBE'
@@ -243,8 +247,7 @@ SETS                                        	return 'SET'
 'TABLE'											return 'TABLE'
 'TABLES'										return 'TABLE'
 'TARGET'										return 'TARGET'
-'TEMP'											return 'TEMP'
-'TEMPORARY'										return 'TEMP'
+
 'TEXTSTRING'									return 'TEXTSTRING'
 'THEN'											return 'THEN'
 'TIMEOUT'										return 'TIMEOUT'
@@ -282,10 +285,7 @@ SETS                                        	return 'SET'
 '*'												return 'STAR'
 '/'												return 'SLASH'
 '%'												return 'MODULO'
-'!==='											return 'NEEQEQEQ'
-'==='											return 'EQEQEQ'
-'!=='											return 'NEEQEQ'
-'=='											return 'EQEQ'
+
 '>='											return 'GE'
 '&'												return 'AMPERSAND'
 '|'												return 'BAR'
@@ -610,10 +610,7 @@ STRING
 		}
 	| DOUBLE_STRING
 		{ 
-			$$ = $1; 
-			if (yy.parseError2) {
-				yy.parseError2('error.doubleString', this._$);
-			}
+			$$ = $1;
 		}
 	;
 
@@ -1167,6 +1164,8 @@ OrderExpression
 
 LimitClause
 	: { $$ = undefined; }
+	| LIMIT NumValue COMMA NumValue
+		{ $$ = {limit:$4}; yy.extend($$, {offset: $2}); }
 	| LIMIT NumValue OffsetClause
 		{ $$ = {limit:$2}; yy.extend($$, $3); }
 	| OFFSET NumValue ROWS? FETCH NEXT? NumValue ROWS? ONLY?
@@ -1419,6 +1418,8 @@ FuncValue
 			    $$ = new yy.FuncValue({funcid: funcid, args: exprlist}); 
 			};
 		}
+	| INSERT LPAR ExprList RPAR
+		{ $$ = new yy.FuncValue({ funcid: 'INSERT', args: $3});  }
 	| TRUNCATE LPAR ExprList RPAR
 		{ $$ = new yy.FuncValue({ funcid: 'TRUNCATE', args: $3});  }
 	| RIGHTFN ExprList RPAR
@@ -1435,6 +1436,8 @@ FuncValue
 		{ $$ = new yy.FuncValue({ funcid: 'DATEADD', args:[new yy.StringValue({value:$3}),$5,$7]}) }
 	| DATEADD LPAR STRING COMMA Expression COMMA Expression RPAR
 		{ $$ = new yy.FuncValue({ funcid: 'DATEADD', args:[$3,$5,$7]}) }
+	| DATEDIFF LPAR Column COMMA Column RPAR
+		{ $$ = new yy.FuncValue({ funcid: 'DATEDIFF', args:[ new yy.StringValue({value: 'day'}), $3, $5]}) }
 	| DATEDIFF LPAR Literal COMMA Expression COMMA Expression RPAR
 		{ $$ = new yy.FuncValue({ funcid: 'DATEDIFF', args:[new yy.StringValue({value:$3}),$5,$7]}) }
 	| DATEDIFF LPAR STRING COMMA Expression COMMA Expression RPAR
@@ -1907,7 +1910,23 @@ ColumnsList
 /* CREATE TABLE */
 
 CreateTable
-	:  CREATE TemporaryClause TableClass IfNotExists Table LPAR CreateTableDefClause RPAR CreateTableOptionsClause
+	: CREATE_TEMP TableClass IfNotExists Table LPAR CreateTableDefClause RPAR CreateTableOptionsClause
+		{ 
+			$$ = new yy.CreateTable({table:$4}); 
+			yy.extend($$,{temporary:true}); 
+			yy.extend($$,$2); 
+			yy.extend($$,$3); 
+			yy.extend($$,$6); 
+			yy.extend($$,$8); 
+		}
+	| CREATE_TEMP TableClass IfNotExists Table
+		{ 
+			$$ = new yy.CreateTable({table:$4}); 
+			yy.extend($$,{temporary:true}); 
+			yy.extend($$,$2); 
+			yy.extend($$,$3); 
+		}
+	| CREATE TemporaryClause TableClass IfNotExists Table LPAR CreateTableDefClause RPAR CreateTableOptionsClause
 		{ 
 			$$ = new yy.CreateTable({table:$5}); 
 			yy.extend($$,$2); 
@@ -1952,8 +1971,6 @@ CreateTableOption
 
 TemporaryClause 
 	: { $$ = undefined; }
-	| TEMP
-		{ $$ = {temporary:true}; }
 	;
 
 IfNotExists
@@ -2331,7 +2348,19 @@ ShowCreateTable
 	;
 
 CreateView
-	:  CREATE TemporaryClause VIEW IfNotExists Table LPAR ColumnsList RPAR AS Select SubqueryRestriction?
+	:  CREATE_TEMP VIEW IfNotExists Table LPAR ColumnsList RPAR AS Select SubqueryRestriction?
+		{
+			$$ = new yy.CreateTable({table:$4,view:true,select:$9,viewcolumns:$6}); 
+			yy.extend($$,{temporary:true}); 
+			yy.extend($$,$3); 
+		}
+	| CREATE_TEMP VIEW IfNotExists Table AS Select SubqueryRestriction?
+		{ 
+			$$ = new yy.CreateTable({table:$4,view:true,select:$6}); 
+			yy.extend($$,{temporary:true}); 
+			yy.extend($$,$3); 
+		}
+	| CREATE TemporaryClause VIEW IfNotExists Table LPAR ColumnsList RPAR AS Select SubqueryRestriction?
 		{
 			$$ = new yy.CreateTable({table:$5,view:true,select:$10,viewcolumns:$7}); 
 			yy.extend($$,$2); 

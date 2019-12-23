@@ -279,8 +279,9 @@ yy.Op.prototype.toString = function() {
 		' ' +
 		this.op +
 		' ' +
-		(this.allsome ? this.allsome + ' ' : '') +
-		this.right.toString()
+		(this.right instanceof yy.Select
+			? '(' + this.right.toString() + ')'
+			: this.right.toString())
 	);
 };
 
@@ -798,7 +799,7 @@ yy.UniOp.prototype.toString = function() {
 	}
 	if (this.op === 'NOT') {
 		//s = this.op + '(' + this.right.toString() + ')';
-		s = this.op + this.right.toString() ;
+		s = this.op + ' ' + this.right.toString();
 	}
 	if (this.op === null) {
 		s = '(' + this.right.toString() + ')';
@@ -826,6 +827,10 @@ yy.UniOp.prototype.toType = function() {
 
 	if (this.op === 'NOT') {
 		return 'boolean';
+	}
+
+	if (this.right) {
+		return this.right.toType();
 	}
 
 	// Todo: implement default case
