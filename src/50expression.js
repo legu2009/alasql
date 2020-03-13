@@ -232,12 +232,16 @@ yy.Op = function(params) {
 	return yy.extend(this, params);
 };
 yy.Op.prototype.toString = function() {
+	var leftString = this.left.toString();
+	if (this.left instanceof yy.Select) {
+		leftString = '(' + leftString + ')';
+	}
 	if (this.op === 'IN' || this.op === 'NOT IN') {
-		return this.left.toString() + ' ' + this.op + ' (' + this.right.toString() + ')';
+		return leftString + ' ' + this.op + ' (' + this.right.toString() + ')';
 	}
 	if (this.op === 'BETWEEN' || this.op === 'NOT BETWEEN') {
 		return (
-			this.left.toString() +
+			leftString +
 			' ' +
 			this.op +
 			' ' +
@@ -248,7 +252,7 @@ yy.Op.prototype.toString = function() {
 	}
 	if (this.allsome) {
 		return (
-			this.left.toString() +
+			leftString +
 			' ' +
 			this.op +
 			' ' +
@@ -259,7 +263,7 @@ yy.Op.prototype.toString = function() {
 		);
 	}
 	if (this.op === '->' || this.op === '!') {
-		var s = this.left.toString() + this.op;
+		var s = leftString + this.op;
 		//		console.log(this.right);
 
 		if (typeof this.right !== 'string' && typeof this.right !== 'number') {
@@ -275,7 +279,7 @@ yy.Op.prototype.toString = function() {
 		return s;
 	}
 	return (
-		this.left.toString() +
+		leftString +
 		' ' +
 		this.op +
 		' ' +
