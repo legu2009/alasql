@@ -251,16 +251,7 @@ yy.Op.prototype.toString = function() {
 		);
 	}
 	if (this.allsome) {
-		return (
-			leftString +
-			' ' +
-			this.op +
-			' ' +
-			this.allsome +
-			' (' +
-			this.right.toString() +
-			')'
-		);
+		return leftString + ' ' + this.op + ' ' + this.allsome + ' (' + this.right.toString() + ')';
 	}
 	if (this.op === '->' || this.op === '!') {
 		var s = leftString + this.op;
