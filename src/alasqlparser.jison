@@ -299,8 +299,8 @@ SETS                                        	return 'SET'
 '!='											return 'NE'
 '('												return 'LPAR'
 ')'												return 'RPAR'
-'@'[\u4E00-\u9FA5A-Za-z_0-9]*												return 'PARAM'
-'$'[\u4E00-\u9FA5A-Za-z_0-9]*												return 'VPARAM'
+'@'[\u4E00-\u9FA5A-Za-z_0-9]+												return 'PARAM'
+'$'[\u4E00-\u9FA5A-Za-z_0-9]+												return 'VPARAM'
 '@'												return 'AT'
 '{'												return 'LCUR'
 '}'												return 'RCUR'
@@ -686,15 +686,15 @@ SearchSelector
 		{ $$ = {srchid:"DELETE"}; }
 */	| Json
 		{ $$ = {srchid:"EX",args:[new yy.Json({value:$1})]}; }
-	| AT Literal
-		{ $$ = {srchid:"AT", args:[$2]}; }	
-	| AS AT Literal
-		{ $$ = {srchid:"AS", args:[$3]}; }	
+	| PARAM
+		{ $$ = {srchid:"AT", args:[$1.substr(1)]}; }	
+	| AS PARAM
+		{ $$ = {srchid:"AS", args:[$2.substr(1)]}; }	
 	| SET LPAR SetColumnsList RPAR
 		{ $$ = {srchid:"SET", args:$3}; }	
 
-	| TO AT Literal
-		{ $$ = {selid:"TO", args:[$3]}; }	
+	| TO PARAM
+		{ $$ = {selid:"TO", args:[$2.substr(1)]}; }	
 	| VALUE
 		{ $$ = {srchid:"VALUE"}; }	
 	| ROW LPAR ExprList RPAR
@@ -1476,8 +1476,8 @@ NullValue
 	;
 
 VarValue
-	: AT Literal
-		{ $$ = new yy.VarValue({variable:$2}); }
+	: PARAM
+		{ $$ = new yy.VarValue({variable:$1.substr(1)}); }
 	;
 
 ExistsValue
@@ -1495,11 +1495,11 @@ ArrayValue
 	;
 
 ParamValue
-	: DOLLAR (Literal|NUMBER)
+	: VPARAM
+		{ $$ = new yy.ParamValue({param: $1.substr(1)}); }
+	| DOLLAR NUMBER
 		{ $$ = new yy.ParamValue({param: $2}); }
-/*	| DOLLAR NUMBER
-		{ $$ = new yy.ParamValue({param: $2}); }
-*/	| COLON Literal
+	| COLON Literal
 		{ $$ = new yy.ParamValue({param: $2}); }
 	| QUESTION
 		{ 
@@ -1805,8 +1805,8 @@ SetColumn
 	: Column EQ Expression
 /* TODO Replace columnid with column */
 		{ $$ = new yy.SetColumn({column:$1, expression:$3})}
-	| (AT|DOLLAR) Literal EQ Expression
-		{ $$ = new yy.SetColumn({variable:$2, expression:$4, method:$1})}
+	| (PARAM|VPARAM) EQ Expression
+		{ $$ = new yy.SetColumn({variable:$1.substr(1), expression:$3, method:$1[0]})}
 	;
 
 /* DELETE */
@@ -2449,7 +2449,7 @@ Assert
 	;
 
 Json
-	: AT LPAR Expression RPAR
+	/*: AT LPAR Expression RPAR
 		{ $$ = $3; }
 	| AT StringValue
 		{ $$ = $2.value; }
@@ -2458,11 +2458,11 @@ Json
 	| AT LogicValue
 		{ $$ = (!!$2.value); }
 	| AT ParamValue
-		{ $$ = $2; }
-	| JsonObject
+		{ $$ = $2; }*/
+	: JsonObject
 		{ $$ = $1; }
-	| AT JsonObject
-		{ $$ = $2; }
+/*	| AT JsonObject
+		{ $$ = $2; }*/
 	| ATLBRA JsonArray
 		{ $$ = $2; }
 	;
@@ -2721,14 +2721,14 @@ DeclaresList
 	;
 
 DeclareItem
-	: AT Literal ColumnType
-		{ $$ = {variable: $2}; yy.extend($$,$3); }
-	| AT Literal AS ColumnType
-		{ $$ = {variable: $2}; yy.extend($$,$4); }
-	| AT Literal ColumnType EQ Expression
-		{ $$ = {variable: $2, expression:$5}; yy.extend($$,$3);}
-	| AT Literal AS ColumnType EQ Expression
-		{ $$ = {variable: $2, expression:$6}; yy.extend($$,$4);}
+	: PARAM ColumnType
+		{ $$ = {variable: $1.substr(1)}; yy.extend($$,$2); }
+	| PARAM AS ColumnType
+		{ $$ = {variable: $1.substr(1)}; yy.extend($$,$3); }
+	| PARAM ColumnType EQ Expression
+		{ $$ = {variable: $1.substr(1), expression:$4}; yy.extend($$,$2);}
+	| PARAM AS ColumnType EQ Expression
+		{ $$ = {variable: $1.substr(1), expression:$5}; yy.extend($$,$3);}
 	;
 
 TruncateTable
