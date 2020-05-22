@@ -299,6 +299,8 @@ SETS                                        	return 'SET'
 '!='											return 'NE'
 '('												return 'LPAR'
 ')'												return 'RPAR'
+'@'[\u4E00-\u9FA5A-Za-z_0-9]*												return 'PARAM'
+'$'[\u4E00-\u9FA5A-Za-z_0-9]*												return 'VPARAM'
 '@'												return 'AT'
 '{'												return 'LCUR'
 '}'												return 'RCUR'
@@ -2548,17 +2550,14 @@ SetVariable
 		{ $$ = new yy.SetVariable({variable:$2, expression:$4});}
 	| SET Literal SetPropsList EQ Expression
 		{ $$ = new yy.SetVariable({variable:$2, props: $3, expression:$5});}
-	| SET AtDollar Literal EQ Expression
-		{ $$ = new yy.SetVariable({variable:$3, expression:$5, method:$2});}
-	| SET AtDollar Literal SetPropsList EQ Expression
-		{ $$ = new yy.SetVariable({variable:$3, props: $4, expression:$6, method:$2});}
-	;
-
-AtDollar
-	: AT
-		{$$ = '@'; }
-	| DOLLAR
-		{$$ = '$'; }
+	| SET PARAM EQ Expression
+		{ $$ = new yy.SetVariable({variable:$2.substr(1), expression:$4, method: '@'});}
+	| SET PARAM SetPropsList EQ Expression
+		{ $$ = new yy.SetVariable({variable:$2.substr(1), props: $3, expression:$5, method: '@'});}
+	| SET VPARAM EQ Expression
+		{ $$ = new yy.SetVariable({variable:$2.substr(1), expression:$4, method: '$'});}
+	| SET VPARAM SetPropsList EQ Expression
+		{ $$ = new yy.SetVariable({variable:$2.substr(1), props: $3, expression:$5, method: '$'});}
 	;
 
 SetPropsList 
@@ -2818,8 +2817,10 @@ OutputClause
 	: 
 	| OUTPUT ResultColumns
 		{ $$ = {output:{columns:$2}} }
-	| OUTPUT ResultColumns INTO AtDollar Literal
-		{ $$ = {output:{columns:$2, intovar: $5, method:$4}} }
+	| OUTPUT ResultColumns INTO PARAM
+		{ $$ = {output:{columns:$2, intovar: $4.substr(1), method:'@'}} }
+	| OUTPUT ResultColumns INTO VPARAM
+		{ $$ = {output:{columns:$2, intovar: $4.substr(1), method:'$'}} }
 	| OUTPUT ResultColumns INTO Table
 		{ $$ = {output:{columns:$2, intotable: $4}} }
 	| OUTPUT ResultColumns INTO Table LPAR ColumnsList RPAR
@@ -2946,18 +2947,24 @@ GraphElementVar
 	;
 
 GraphVar
-	: AtDollar Literal
-		{ $$ = {vars:$2, method:$1}; }
+	: PARAM
+		{ $$ = {vars:$1.substr(1), method:'@'}; }
+	| VPARAM
+		{ $$ = {vars:$1.substr(1), method:'$'}; }
 	;
 
 GraphAsClause
-	: AS AtDollar Literal
-		{ $$ = $3; }
+	: AS PARAM
+		{ $$ = $2.substr(1); }
+	| AS VPARAM
+		{ $$ = $2.substr(1); }
 	;
 
 GraphAtClause
-	: AtDollar Literal
-		{ $$ = $2; }
+	: PARAM
+		{ $$ = $1.substr(1); }
+	| VPARAM
+		{ $$ = $1.substr(1); }
 	;
 
 GraphElement2
