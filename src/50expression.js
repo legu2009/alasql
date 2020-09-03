@@ -679,7 +679,7 @@ yy.StringValue = function(params) {
 	return yy.extend(this, params);
 };
 yy.StringValue.prototype.toString = function() {
-	return "'" + this.value.toString() + "'";
+	return "'" + this.value.toString().replace(/'/g, "\\'") + "'";
 };
 
 yy.StringValue.prototype.toType = function() {
