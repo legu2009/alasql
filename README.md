@@ -3,7 +3,7 @@ _AlaSQL is an open source project used on more than two million page views per m
 _Have a question? Ask on [Stack Overflow](http://stackoverflow.com/questions/ask?tags=AlaSQL) using the "alasql" tag._
 
 
-[![Build Status](https://travis-ci.org/agershun/alasql.svg?branch=develop)](https://travis-ci.org/agershun/alasql)
+[![CI-test](https://github.com/agershun/alasql/workflows/CI-test/badge.svg)](https://github.com/agershun/alasql/actions)
 [![NPM downloads](http://img.shields.io/npm/dm/alasql.svg?style=flat&label=npm%20downloads)](https://npm-stat.com/charts.html?package=alasql)
 [![OPEN open source software](https://img.shields.io/badge/Open--OSS-%E2%9C%94-brightgreen.svg)](http://open-oss.com)
 [![Release](https://img.shields.io/github/release/agershun/alasql.svg?label=Last%20release&a)](https://www.npmjs.com/package/alasql)
@@ -105,8 +105,10 @@ __If you are familiar with SQL it should come as no surprise that proper use of 
 
 
 ```bash
-npm install --save alasql      # node
-bower install --save alasql    # bower
+yarn add alasql                # yarn
+
+npm install alasql             # npm
+
 npm install -g alasql          # global installation for command line tools
 ```
 
@@ -114,7 +116,7 @@ For the browser: include [alasql.min.js](https://cdn.jsdelivr.net/npm/alasql)
 
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/alasql@0.5"></script>
+<script src="https://cdn.jsdelivr.net/npm/alasql@0.6"></script>
 ```
 
 
@@ -142,17 +144,13 @@ Other links:
 **All contributions are extremely welcome and greatly appreciated(!)** -
 The project has never received any funding and is based on unpaid voluntary work: [We really (really) love pull requests](https://github.com/agershun/alasql/blob/develop/CONTRIBUTING.md)
 
-AlaSQL project is very young and still in an active development phase, therefore it <s>may</s> have [bugs](https://github.com/agershun/alasql/labels/%21%20Bug).
-Please, submit any bugs and suggestions [as an issue](https://github.com/agershun/alasql/issues/new).
+The AlaSQL project depends on your contribution of code and <s>may</s> have [bugs](https://github.com/agershun/alasql/labels/%21%20Bug). So please, submit any bugs and suggestions [as an issue](https://github.com/agershun/alasql/issues/new).
 
-[![Known bugs](https://img.shields.io/github/issues-raw/agershun/alasql/!%20bug.svg?label=Known%20Bugs&maxAge=2592000)](https://github.com/agershun/alasql/issues?q=is%3Aissue+is%3Aopen+label%3A%22%21+Bug%22)
-
-
-AlaSQL uses [Semantic Versioning](http://semver.org/) so please note that the major version is zero (0.y.z) and the API can not be considered 100% stable. Consider this before using the library in production and please check out the [limitations of the library](https://github.com/agershun/alasql#limitations)
+Please check out the [limitations of the library](https://github.com/agershun/alasql#limitations).
 
 ## Performance
 
-AlaSQL is designed for speed, and we have applied common SQL engine optimizations:
+AlaSQL is designed for speed and includes some of the classic SQL engine optimizations:
 
 * Queries are cached as compiled functions
 * Joined tables are pre-indexed
