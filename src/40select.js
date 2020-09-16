@@ -1,7 +1,7 @@
 yy.Select = function (params) {
 	return yy.extend(this, params);
 };
-yy.Select.prototype.toString = function () {
+yy.Select.prototype.toString = function (unionType) {
 	var s;
 	s = '';
 	if (this.explain) {
