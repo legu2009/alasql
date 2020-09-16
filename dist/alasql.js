@@ -1,7 +1,7 @@
-//! AlaSQL v0.6.3-develop-a3c2325cundefined | © 2014-2018 Andrey Gershun & Mathias Rangel Wulff | License: MIT
+//! AlaSQL v0.6.3-develop-47536563undefined | © 2014-2018 Andrey Gershun & Mathias Rangel Wulff | License: MIT
 /*
 @module alasql
-@version 0.6.3-develop-a3c2325cundefined
+@version 0.6.3-develop-47536563undefined
 
 AlaSQL - JavaScript SQL database
 © 2014-2016	Andrey Gershun & Mathias Rangel Wulff
@@ -142,7 +142,7 @@ var alasql = function(sql, params, cb, scope) {
 	Current version of alasql 
  	@constant {string} 
 */
-alasql.version = '0.6.3-develop-a3c2325cundefined';
+alasql.version = '0.6.3-develop-47536563undefined';
 
 /**
 	Debug flag
@@ -7142,10 +7142,10 @@ function swapSources(query, h) {
 	query.sources[h + 1] = source;
 }
 
-yy.Select = function (params) {
+yy.Select = function(params) {
 	return yy.extend(this, params);
 };
-yy.Select.prototype.toString = function () {
+yy.Select.prototype.toString = function(unionType) {
 	var s;
 	s = '';
 	if (this.explain) {
@@ -7165,7 +7165,7 @@ yy.Select.prototype.toString = function () {
 		}
 	}
 	s += this.columns
-        .map(function (col) {
+		.map(function(col) {
 			var s;
 			s = col.toString(true);
 			if (typeof col.as !== 'undefined') {
@@ -7178,7 +7178,7 @@ yy.Select.prototype.toString = function () {
 		s +=
 			' FROM ' +
 			this.from
-                .map(function (f) {
+				.map(function(f) {
 					var ss;
 					ss = f.toString();
 					if (f instanceof yy.Select) {
@@ -7193,7 +7193,7 @@ yy.Select.prototype.toString = function () {
 	}
 	if (this.joins) {
 		s += this.joins
-            .map(function (jn) {
+			.map(function(jn) {
 				var ss;
 				ss = ' ';
 				if (jn.joinmode) {
@@ -7228,7 +7228,7 @@ yy.Select.prototype.toString = function () {
 		s +=
 			' GROUP BY ' +
 			this.group
-                .map(function (grp) {
+				.map(function(grp) {
 					return grp.toString();
 				})
 				.join(', ');
@@ -7240,7 +7240,7 @@ yy.Select.prototype.toString = function () {
 		s +=
 			' ORDER BY ' +
 			this.order
-				.map(function (ord) {
+				.map(function(ord) {
 					return ord.toString();
 				})
 				.join(', ');
@@ -7259,19 +7259,22 @@ yy.Select.prototype.toString = function () {
 	}
 
 	if (this.union) {
-        s += ' UNION ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.union.toString('union');
+		s += ' UNION ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.union.toString('union');
 	}
 	if (this.unionall) {
-		s += ' UNION ALL ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.except.toString('unionall');
+		s +=
+			' UNION ALL ' +
+			(this.corresponding ? 'CORRESPONDING ' : '') +
+			this.except.toString('unionall');
 	}
 	if (this.except) {
-		s +=
-			' EXCEPT ' +
-			(this.corresponding ? 'CORRESPONDING ' : '') +
-			this.except.toString('except');
+		s += ' EXCEPT ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.except.toString('except');
 	}
 	if (this.intersect) {
-        s += ' INTERSECT ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.intersect.toString('intersect');
+		s +=
+			' INTERSECT ' +
+			(this.corresponding ? 'CORRESPONDING ' : '') +
+			this.intersect.toString('intersect');
 	}
 	return s;
 };
@@ -7279,7 +7282,7 @@ yy.Select.prototype.toString = function () {
 /**
  Select statement in expression
  */
-yy.Select.prototype.toJS = function (context) {
+yy.Select.prototype.toJS = function(context) {
 
 	//	if(this.expression.reduced) return 'true';
 	//	return this.expression.toJS(context, tableid, defcols);
@@ -7297,7 +7300,7 @@ yy.Select.prototype.toJS = function (context) {
 };
 
 // Compile SELECT statement
-yy.Select.prototype.compile = function (databaseid, params) {
+yy.Select.prototype.compile = function(databaseid, params) {
 	var db = alasql.databases[databaseid];
 	// Create variable for query
 	var query = new Query();
@@ -7502,12 +7505,12 @@ yy.Select.prototype.compile = function (databaseid, params) {
 	}
 
 	// Now, compile all togeather into one function with query object in scope
-	var statement = function (params, cb, oldscope) {
+	var statement = function(params, cb, oldscope) {
 		query.params = params;
 		// Note the callback function has the data and error reversed due to existing code in promiseExec which has the
 		// err and data swapped.  This trickles down into alasql.exec and further. Rather than risk breaking the whole thing,
 		// the (data, err) standard is maintained here.
-		var res1 = queryfn(query, oldscope, function (res, err) {
+		var res1 = queryfn(query, oldscope, function(res, err) {
 			if (err) {
 				return cb(err, null);
 			}
@@ -7570,7 +7573,7 @@ function modify(query, res) {
 				}
 			}
 
-			columns = Object.keys(allcol).map(function (columnid) {
+			columns = Object.keys(allcol).map(function(columnid) {
 				return {columnid: columnid};
 			});
 		} else {
@@ -7666,7 +7669,7 @@ function modify(query, res) {
 	return res;
 }
 
-yy.Select.prototype.execute = function (databaseid, params, cb) {
+yy.Select.prototype.execute = function(databaseid, params, cb) {
 	return this.compile(databaseid)(params, cb);
 	//	throw new Error('Insert statement is should be compiled')
 };
