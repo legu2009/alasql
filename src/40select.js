@@ -1,7 +1,7 @@
-yy.Select = function (params) {
+yy.Select = function(params) {
 	return yy.extend(this, params);
 };
-yy.Select.prototype.toString = function (unionType) {
+yy.Select.prototype.toString = function(unionType) {
 	var s;
 	s = '';
 	if (this.explain) {
@@ -21,7 +21,7 @@ yy.Select.prototype.toString = function (unionType) {
 		}
 	}
 	s += this.columns
-        .map(function (col) {
+		.map(function(col) {
 			var s;
 			s = col.toString(true);
 			if (typeof col.as !== 'undefined') {
@@ -34,7 +34,7 @@ yy.Select.prototype.toString = function (unionType) {
 		s +=
 			' FROM ' +
 			this.from
-                .map(function (f) {
+				.map(function(f) {
 					var ss;
 					ss = f.toString();
 					if (f instanceof yy.Select) {
@@ -49,7 +49,7 @@ yy.Select.prototype.toString = function (unionType) {
 	}
 	if (this.joins) {
 		s += this.joins
-            .map(function (jn) {
+			.map(function(jn) {
 				var ss;
 				ss = ' ';
 				if (jn.joinmode) {
@@ -84,10 +84,13 @@ yy.Select.prototype.toString = function (unionType) {
 		s +=
 			' GROUP BY ' +
 			this.group
-                .map(function (grp) {
+				.map(function(grp) {
 					return grp.toString();
 				})
 				.join(', ');
+		if (this.groupWith) {
+			s += ' WITH ' + this.groupWith;
+		}
 	}
 	if (this.having) {
 		s += ' HAVING ' + this.having.toString();
@@ -96,7 +99,7 @@ yy.Select.prototype.toString = function (unionType) {
 		s +=
 			' ORDER BY ' +
 			this.order
-				.map(function (ord) {
+				.map(function(ord) {
 					return ord.toString();
 				})
 				.join(', ');
@@ -115,19 +118,22 @@ yy.Select.prototype.toString = function (unionType) {
 	}
 
 	if (this.union) {
-        s += ' UNION ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.union.toString('union');
+		s += ' UNION ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.union.toString('union');
 	}
 	if (this.unionall) {
-		s += ' UNION ALL ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.except.toString('unionall');
+		s +=
+			' UNION ALL ' +
+			(this.corresponding ? 'CORRESPONDING ' : '') +
+			this.unionall.toString('unionall');
 	}
 	if (this.except) {
-		s +=
-			' EXCEPT ' +
-			(this.corresponding ? 'CORRESPONDING ' : '') +
-			this.except.toString('except');
+		s += ' EXCEPT ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.except.toString('except');
 	}
 	if (this.intersect) {
-        s += ' INTERSECT ' + (this.corresponding ? 'CORRESPONDING ' : '') + this.intersect.toString('intersect');
+		s +=
+			' INTERSECT ' +
+			(this.corresponding ? 'CORRESPONDING ' : '') +
+			this.intersect.toString('intersect');
 	}
 	return s;
 };
@@ -135,7 +141,7 @@ yy.Select.prototype.toString = function (unionType) {
 /**
  Select statement in expression
  */
-yy.Select.prototype.toJS = function (context) {
+yy.Select.prototype.toJS = function(context) {
 	//	console.log('Expression',this);
 	//	if(this.expression.reduced) return 'true';
 	//	return this.expression.toJS(context, tableid, defcols);
@@ -155,7 +161,7 @@ yy.Select.prototype.toJS = function (context) {
 };
 
 // Compile SELECT statement
-yy.Select.prototype.compile = function (databaseid, params) {
+yy.Select.prototype.compile = function(databaseid, params) {
 	var db = alasql.databases[databaseid];
 	// Create variable for query
 	var query = new Query();
@@ -361,12 +367,12 @@ yy.Select.prototype.compile = function (databaseid, params) {
 	//console.log(query);
 
 	// Now, compile all togeather into one function with query object in scope
-	var statement = function (params, cb, oldscope) {
+	var statement = function(params, cb, oldscope) {
 		query.params = params;
 		// Note the callback function has the data and error reversed due to existing code in promiseExec which has the
 		// err and data swapped.  This trickles down into alasql.exec and further. Rather than risk breaking the whole thing,
 		// the (data, err) standard is maintained here.
-		var res1 = queryfn(query, oldscope, function (res, err) {
+		var res1 = queryfn(query, oldscope, function(res, err) {
 			if (err) {
 				return cb(err, null);
 			}
@@ -432,7 +438,7 @@ function modify(query, res) {
 				}
 			}
 
-			columns = Object.keys(allcol).map(function (columnid) {
+			columns = Object.keys(allcol).map(function(columnid) {
 				return {columnid: columnid};
 			});
 		} else {
@@ -534,7 +540,7 @@ function modify(query, res) {
 // 	throw new Error('Select statement should be precompiled');
 
 //  };
-yy.Select.prototype.execute = function (databaseid, params, cb) {
+yy.Select.prototype.execute = function(databaseid, params, cb) {
 	return this.compile(databaseid)(params, cb);
 	//	throw new Error('Insert statement is should be compiled')
 };

@@ -297,6 +297,7 @@ SETS                                        	return 'SET'
 '<>'											return 'NE'
 '<'												return 'LT'
 '='												return 'EQ'
+':='											return 'EQSET'
 '!='											return 'NE'
 '('												return 'LPAR'
 ')'												return 'RPAR'
@@ -337,7 +338,7 @@ SETS                                        	return 'SET'
 /*%left AND*/
 %left IN
 %left NOT
-%left GT GE LT LE EQ NE EQEQ NEEQEQ EQEQEQ NEEQEQEQ
+%left GT GE LT LE EQ EQSET NE EQEQ NEEQEQ EQEQEQ NEEQEQEQ
 %left IS
 %left LIKE NOT_LIKE REGEXP GLOB
 %left GTGT LTLT AMPERSAND BAR
@@ -1090,9 +1091,22 @@ WhereClause
 
 GroupClause
 	: { $$ = undefined; }
-	| GROUP BY GroupExpressionsList HavingClause
-		{ $$ = {group:$3}; yy.extend($$,$4); }
+	| GROUP BY GroupExpressionsList WithClause HavingClause
+		{ 
+			$$ = {group:$3};
+			yy.extend($$,$4); 
+			yy.extend($$,$5); 
+		}
 	;
+
+WithClause
+	: { $$ = undefined; }
+	| WITH ROLLUP
+		{ $$ = {groupWith: 'ROLLUP'}}
+	| WITH CUBE
+		{ $$ = {groupWith: 'CUBE'}}
+	;
+
 
 GroupExpressionsList
 	: GroupExpression
@@ -1620,6 +1634,8 @@ Op
 		{ $$ = new yy.Op({left:$1, op:'<=' , right:$3}); }
 	| Expression EQ Expression
 		{ $$ = new yy.Op({left:$1, op:'=' , right:$3}); }
+	| Expression EQSET Expression
+		{ $$ = new yy.Op({left:$1, op:':=' , right:$3}); }
 	| Expression EQEQ Expression
 		{ $$ = new yy.Op({left:$1, op:'==' , right:$3}); }
 	| Expression EQEQEQ Expression
@@ -1781,6 +1797,7 @@ CondOp
 	| LT { $$ = $1; }
 	| LE { $$ = $1; }
 	| EQ { $$ = $1; }
+	| EQSET { $$ = $1; }
 	| NE { $$ = $1; }
 	;
 
