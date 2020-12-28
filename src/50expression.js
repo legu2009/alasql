@@ -3,7 +3,7 @@
   	@class 
 	@param {object} params Initial parameters
 */
-yy.ExpressionStatement = function (params) {
+yy.ExpressionStatement = function(params) {
 	return yy.extend(this, params);
 };
 
@@ -12,7 +12,7 @@ yy.ExpressionStatement = function (params) {
 	@this ExpressionStatement
 	@return {string}
 */
-yy.ExpressionStatement.prototype.toString = function () {
+yy.ExpressionStatement.prototype.toString = function() {
 	return this.expression.toString();
 };
 /**
@@ -22,7 +22,7 @@ yy.ExpressionStatement.prototype.toString = function () {
 	@param {statement-callback} cb Callback
 	@return {object} Result value
 */
-yy.ExpressionStatement.prototype.execute = function (databaseid, params, cb) {
+yy.ExpressionStatement.prototype.execute = function(databaseid, params, cb) {
 	if (this.expression) {
 		//		console.log(this.expression.toJS('','', null));
 		//		console.log(this.expression.toJS('','', null));
@@ -75,7 +75,7 @@ yy.Expression.prototype.toString = function(dontas) {
 	@this ExpressionStatement
 	@param {object} query Query object
 */
-yy.Expression.prototype.findAggregator = function (query) {
+yy.Expression.prototype.findAggregator = function(query) {
 	if (this.expression.findAggregator) {
 		this.expression.findAggregator(query);
 	}
@@ -90,7 +90,7 @@ yy.Expression.prototype.findAggregator = function (query) {
 	@return {string} JavaScript expression
 */
 
-yy.Expression.prototype.toJS = function (context, tableid, defcols) {
+yy.Expression.prototype.toJS = function(context, tableid, defcols) {
 	//	console.log('Expression',this);
 	if (this.expression.reduced) {
 		return 'true';
@@ -107,7 +107,7 @@ yy.Expression.prototype.toJS = function (context, tableid, defcols) {
 	@return {string} JavaScript expression
 */
 
-yy.Expression.prototype.compile = function (context, tableid, defcols) {
+yy.Expression.prototype.compile = function(context, tableid, defcols) {
 	//	console.log('Expression',this);
 	if (this.reduced) {
 		return returnTrue();
@@ -119,19 +119,19 @@ yy.Expression.prototype.compile = function (context, tableid, defcols) {
 	JavaScript class
 	@class
 */
-yy.JavaScript = function (params) {
+yy.JavaScript = function(params) {
 	return yy.extend(this, params);
 };
-yy.JavaScript.prototype.toString = function () {
+yy.JavaScript.prototype.toString = function() {
 	var s = '``' + this.value + '``';
 	return s;
 };
 
-yy.JavaScript.prototype.toJS = function (/* context, tableid, defcols*/) {
+yy.JavaScript.prototype.toJS = function(/* context, tableid, defcols*/) {
 	//	console.log('Expression',this);
 	return '(' + this.value + ')';
 };
-yy.JavaScript.prototype.execute = function (databaseid, params, cb) {
+yy.JavaScript.prototype.execute = function(databaseid, params, cb) {
 	var res = 1;
 	var expr = new Function('params,alasql,p', this.value);
 	expr(params, alasql);
@@ -148,10 +148,10 @@ yy.JavaScript.prototype.execute = function (databaseid, params, cb) {
 	MyVar, [My vairable], `MySQL variable`
 */
 
-yy.Literal = function (params) {
+yy.Literal = function(params) {
 	return yy.extend(this, params);
 };
-yy.Literal.prototype.toString = function (dontas) {
+yy.Literal.prototype.toString = function(dontas) {
 	var s = this.value;
 	if (this.value1) {
 		s = this.value1 + '.' + s;
@@ -166,10 +166,10 @@ yy.Literal.prototype.toString = function (dontas) {
 	@class
 */
 
-yy.Join = function (params) {
+yy.Join = function(params) {
 	return yy.extend(this, params);
 };
-yy.Join.prototype.toString = function () {
+yy.Join.prototype.toString = function() {
 	var s = ' ';
 	if (this.joinmode) {
 		s += this.joinmode + ' ';
@@ -187,10 +187,10 @@ yy.Join.prototype.toString = function () {
 	@class
 */
 
-yy.Table = function (params) {
+yy.Table = function(params) {
 	return yy.extend(this, params);
 };
-yy.Table.prototype.toString = function (dontas) {
+yy.Table.prototype.toString = function(dontas) {
 	var s = this.tableid;
 	//	if(this.joinmode)
 	if (this.databaseid) {
@@ -204,10 +204,10 @@ yy.Table.prototype.toString = function (dontas) {
 	@class
 */
 
-yy.View = function (params) {
+yy.View = function(params) {
 	return yy.extend(this, params);
 };
-yy.View.prototype.toString = function () {
+yy.View.prototype.toString = function() {
 	var s = this.viewid;
 	//	if(this.joinmode)
 	if (this.databaseid) {
@@ -220,10 +220,10 @@ yy.View.prototype.toString = function () {
 	Binary operation class
 	@class
 */
-yy.Op = function (params) {
+yy.Op = function(params) {
 	return yy.extend(this, params);
 };
-yy.Op.prototype.toString = function () {
+yy.Op.prototype.toString = function() {
 	var leftString = this.left.toString();
 	if (this.left instanceof yy.Select) {
 		leftString = '(' + leftString + ')';
@@ -231,11 +231,9 @@ yy.Op.prototype.toString = function () {
 	if (this.op === 'IN' || this.op === 'NOT IN') {
 		return leftString + ' ' + this.op + ' (' + this.right.toString() + ')';
 	}
-	
+
 	if (this.allsome) {
-		return (
-            leftString + ' ' + this.op + ' ' + this.allsome + ' (' + this.right.toString() + ')'
-        );
+		return leftString + ' ' + this.op + ' ' + this.allsome + ' (' + this.right.toString() + ')';
 	}
 	if (this.op === '->' || this.op === '!') {
 		var s = leftString + this.op;
@@ -249,19 +247,13 @@ yy.Op.prototype.toString = function () {
 
 		if (typeof this.right !== 'string' && typeof this.right !== 'number') {
 			s += ')';
-        }
+		}
 
-        return s;
-    }
-    if (this.op === 'BETWEEN' || this.op === 'NOT BETWEEN') {
+		return s;
+	}
+	if (this.op === 'BETWEEN' || this.op === 'NOT BETWEEN') {
 		var s =
-            leftString +
-			' ' +
-			this.op +
-			' ' +
-			this.right1.toString() +
-			' AND ' +
-			this.right2.toString();
+			leftString + ' ' + this.op + ' ' + this.right1.toString() + ' AND ' + this.right2.toString();
 
 		return s;
 	}
@@ -269,15 +261,13 @@ yy.Op.prototype.toString = function () {
 		leftString +
 		' ' +
 		this.op +
-        ' ' +
-        (this.allsome ? this.allsome + ' ' : '') +
-		(this.right instanceof yy.Select
-			? '(' + this.right.toString() + ')'
-			: this.right.toString())
+		' ' +
+		(this.allsome ? this.allsome + ' ' : '') +
+		(this.right instanceof yy.Select ? '(' + this.right.toString() + ')' : this.right.toString())
 	);
 };
 
-yy.Op.prototype.findAggregator = function (query) {
+yy.Op.prototype.findAggregator = function(query) {
 	//	console.log(this.toString());
 	if (this.left && this.left.findAggregator) {
 		this.left.findAggregator(query);
@@ -288,7 +278,7 @@ yy.Op.prototype.findAggregator = function (query) {
 	}
 };
 
-yy.Op.prototype.toType = function (tableid) {
+yy.Op.prototype.toType = function(tableid) {
 	if (['-', '*', '/', '%', '^'].indexOf(this.op) > -1) {
 		return 'number';
 	}
@@ -353,7 +343,7 @@ yy.Op.prototype.toType = function (tableid) {
 	return 'unknown';
 };
 
-yy.Op.prototype.toJS = function (context, tableid, defcols) {
+yy.Op.prototype.toJS = function(context, tableid, defcols) {
 	//	console.log(this);
 	var s;
 	var refs = [];
@@ -363,17 +353,17 @@ yy.Op.prototype.toJS = function (context, tableid, defcols) {
 	//var rightJS = function(){return _this.right.toJS(context,tableid, defcols)};
 	var accessedLeft = false,
 		accessedRight = false;
-	var ref = function (expr) {
+	var ref = function(expr) {
 		if (expr.toJS) {
 			expr = expr.toJS(context, tableid, defcols);
 		}
 		var i = refs.push(expr) - 1;
 		return 'y[' + i + ']';
 	};
-	var leftJS = function () {
+	var leftJS = function() {
 		return ref(_this.left);
 	};
-	var rightJS = function () {
+	var rightJS = function() {
 		return ref(_this.right);
 	};
 
@@ -455,7 +445,7 @@ yy.Op.prototype.toJS = function (context, tableid, defcols) {
 	}
 	if (this.op === 'LIKE' || this.op === 'NOT LIKE') {
 		var s =
-        '(' + (this.op === 'NOT LIKE' ? '!' : '') + 'alasql.utils.like(' + rightJS() + ',' + leftJS();
+			'(' + (this.op === 'NOT LIKE' ? '!' : '') + 'alasql.utils.like(' + rightJS() + ',' + leftJS();
 		if (this.escape) {
 			s += ',' + ref(this.escape);
 		}
@@ -620,88 +610,93 @@ yy.Op.prototype.toJS = function (context, tableid, defcols) {
 	);
 };
 
-yy.VarValue = function (params) {
+yy.VarValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.VarValue.prototype.toString = function () {
+yy.VarValue.prototype.toString = function() {
 	return '@' + this.variable;
 };
 
-yy.VarValue.prototype.toType = function () {
+yy.VarValue.prototype.toType = function() {
 	return 'unknown';
 };
 
-yy.VarValue.prototype.toJS = function () {
+yy.VarValue.prototype.toJS = function() {
 	return "alasql.vars['" + this.variable + "']";
 };
 
-yy.NumValue = function (params) {
+yy.NumValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.NumValue.prototype.toString = function () {
+yy.NumValue.prototype.toString = function() {
 	return this.value.toString();
 };
 
-yy.NumValue.prototype.toType = function () {
+yy.NumValue.prototype.toType = function() {
 	return 'number';
 };
 
-yy.NumValue.prototype.toJS = function () {
+yy.NumValue.prototype.toJS = function() {
 	return '' + this.value;
 };
 
-yy.StringValue = function (params) {
+yy.StringValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.StringValue.prototype.toString = function () {
+yy.StringValue.prototype.toString = function() {
+	var str = this.value.toString();
+	//增加简单判断
+	if (str.indexOf("'") !== -1) {
+		return '"' + str + '"';
+	}
 	return "'" + this.value.toString().replace(/'/g, "\\'") + "'";
 };
 
-yy.StringValue.prototype.toType = function () {
+yy.StringValue.prototype.toType = function() {
 	return 'string';
 };
 
-yy.StringValue.prototype.toJS = function () {
+yy.StringValue.prototype.toJS = function() {
 	//	console.log("'"+doubleqq(this.value)+"'");
 	//	return "'"+doubleqq(this.value)+"'";
 	return "'" + escapeq(this.value) + "'";
 };
 
-yy.DomainValueValue = function (params) {
+yy.DomainValueValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.DomainValueValue.prototype.toString = function () {
+yy.DomainValueValue.prototype.toString = function() {
 	return 'VALUE';
 };
 
-yy.DomainValueValue.prototype.toType = function () {
+yy.DomainValueValue.prototype.toType = function() {
 	return 'object';
 };
 
-yy.DomainValueValue.prototype.toJS = function (context, tableid, defcols) {
+yy.DomainValueValue.prototype.toJS = function(context, tableid, defcols) {
 	//	console.log("'"+doubleqq(this.value)+"'");
 	//	return "'"+doubleqq(this.value)+"'";
 	return context;
 };
 
-yy.ArrayValue = function (params) {
+yy.ArrayValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.ArrayValue.prototype.toString = function () {
+yy.ArrayValue.prototype.toString = function() {
 	return 'ARRAY[]';
 };
 
-yy.ArrayValue.prototype.toType = function () {
+yy.ArrayValue.prototype.toType = function() {
 	return 'object';
 };
 
-yy.ArrayValue.prototype.toJS = function (context, tableid, defcols) {
+yy.ArrayValue.prototype.toJS = function(context, tableid, defcols) {
 	//	console.log("'"+doubleqq(this.value)+"'");
 	//	return "'"+doubleqq(this.value)+"'";
 	return (
 		'[(' +
 		this.value
-			.map(function (el) {
+			.map(function(el) {
 				return el.toJS(context, tableid, defcols);
 			})
 			.join('), (') +
@@ -709,39 +704,39 @@ yy.ArrayValue.prototype.toJS = function (context, tableid, defcols) {
 	);
 };
 
-yy.LogicValue = function (params) {
+yy.LogicValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.LogicValue.prototype.toString = function () {
+yy.LogicValue.prototype.toString = function() {
 	return this.value ? 'TRUE' : 'FALSE';
 };
 
-yy.LogicValue.prototype.toType = function () {
+yy.LogicValue.prototype.toType = function() {
 	return 'boolean';
 };
 
-yy.LogicValue.prototype.toJS = function () {
+yy.LogicValue.prototype.toJS = function() {
 	return this.value ? 'true' : 'false';
 };
 
-yy.NullValue = function (params) {
+yy.NullValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.NullValue.prototype.toString = function () {
+yy.NullValue.prototype.toString = function() {
 	return 'NULL';
 };
-yy.NullValue.prototype.toJS = function () {
+yy.NullValue.prototype.toJS = function() {
 	return 'undefined';
 	//	return 'undefined';
 };
 
-yy.ParamValue = function (params) {
+yy.ParamValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.ParamValue.prototype.toString = function () {
+yy.ParamValue.prototype.toString = function() {
 	return '$' + this.param;
 };
-yy.ParamValue.prototype.toJS = function () {
+yy.ParamValue.prototype.toJS = function() {
 	if (typeof this.param === 'string') {
 		return "params['" + this.param + "']";
 	}
@@ -749,10 +744,10 @@ yy.ParamValue.prototype.toJS = function () {
 	return 'params[' + this.param + ']';
 };
 
-yy.UniOp = function (params) {
+yy.UniOp = function(params) {
 	return yy.extend(this, params);
 };
-yy.UniOp.prototype.toString = function () {
+yy.UniOp.prototype.toString = function() {
 	var s;
 	s = void 0;
 	if (this.op === '~') {
@@ -780,13 +775,13 @@ yy.UniOp.prototype.toString = function () {
 	return s;
 };
 
-yy.UniOp.prototype.findAggregator = function (query) {
+yy.UniOp.prototype.findAggregator = function(query) {
 	if (this.right.findAggregator) {
 		this.right.findAggregator(query);
 	}
 };
 
-yy.UniOp.prototype.toType = function () {
+yy.UniOp.prototype.toType = function() {
 	if (this.op === '-') {
 		return 'number';
 	}
@@ -806,7 +801,7 @@ yy.UniOp.prototype.toType = function () {
 	// Todo: implement default case
 };
 
-yy.UniOp.prototype.toJS = function (context, tableid, defcols) {
+yy.UniOp.prototype.toJS = function(context, tableid, defcols) {
 	if (this.op === '~') {
 		return '(~(' + this.right.toJS(context, tableid, defcols) + '))';
 	}
@@ -858,10 +853,10 @@ yy.UniOp.prototype.toJS = function (context, tableid, defcols) {
 // 	return s;
 // }
 */
-yy.Column = function (params) {
+yy.Column = function(params) {
 	return yy.extend(this, params);
 };
-yy.Column.prototype.toString = function (dontas) {
+yy.Column.prototype.toString = function(dontas) {
 	var s;
 	if (this.columnid == +this.columnid) {
 		// jshint ignore:line
@@ -883,11 +878,11 @@ yy.Column.prototype.toString = function (dontas) {
 	return s;
 };
 
-yy.Column.prototype.toType = function (dontas) {
+yy.Column.prototype.toType = function(dontas) {
 	return 'unknown';
 };
 
-yy.Column.prototype.toJS = function (context, tableid, defcols) {
+yy.Column.prototype.toJS = function(context, tableid, defcols) {
 	/*/*
 //	var s = this.value;
 // 	var s = this.columnid;
@@ -984,10 +979,10 @@ yy.Column.prototype.toJS = function (context, tableid, defcols) {
 	return s;
 };
 
-yy.AggrValue = function (params) {
+yy.AggrValue = function(params) {
 	return yy.extend(this, params);
 };
-yy.AggrValue.prototype.toString = function (dontas) {
+yy.AggrValue.prototype.toString = function(dontas) {
 	var s = '';
 	if (this.aggregatorid === 'REDUCE') {
 		s += this.funcid + '(';
@@ -1014,7 +1009,7 @@ yy.AggrValue.prototype.toString = function (dontas) {
 	return s;
 };
 
-yy.AggrValue.prototype.findAggregator = function (query) {
+yy.AggrValue.prototype.findAggregator = function(query) {
 	//	console.log('aggregator found',this.toString());
 
 	//	var colas = this.as || this.toString();
@@ -1069,7 +1064,7 @@ yy.AggrValue.prototype.findAggregator = function (query) {
 	return;
 };
 
-yy.AggrValue.prototype.toType = function () {
+yy.AggrValue.prototype.toType = function() {
 	if (
 		['SUM', 'COUNT', 'AVG', 'MIN', 'MAX', 'AGGR', 'VAR', 'STDDEV'].indexOf(this.aggregatorid) > -1
 	) {
@@ -1089,7 +1084,7 @@ yy.AggrValue.prototype.toType = function () {
 	// todo: implement default;
 };
 
-yy.AggrValue.prototype.toJS = function (/*context, tableid, defcols*/) {
+yy.AggrValue.prototype.toJS = function(/*context, tableid, defcols*/) {
 	/*/*
 //	var s = 'alasql.functions.'+this.funcid+'(';
 //	if(this.expression) s += this.expression.toJS(context, tableid);
@@ -1107,7 +1102,7 @@ yy.AggrValue.prototype.toJS = function (/*context, tableid, defcols*/) {
 	return "g['" + colas + "']";
 };
 
-yy.OrderExpression = function (params) {
+yy.OrderExpression = function(params) {
 	return yy.extend(this, params);
 };
 yy.OrderExpression.prototype.toString = yy.Expression.prototype.toString;
@@ -1120,10 +1115,10 @@ function() {
 	return s;
 }*/
 
-yy.GroupExpression = function (params) {
+yy.GroupExpression = function(params) {
 	return yy.extend(this, params);
 };
-yy.GroupExpression.prototype.toString = function () {
+yy.GroupExpression.prototype.toString = function() {
 	return this.type + '(' + this.group.toString() + ')';
 };
 
