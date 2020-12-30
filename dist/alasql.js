@@ -1,7 +1,7 @@
-//! AlaSQL v0.6.3-develop-64605264undefined | © 2014-2018 Andrey Gershun & Mathias Rangel Wulff | License: MIT
+//! AlaSQL v0.6.3-develop-49c15c66undefined | © 2014-2018 Andrey Gershun & Mathias Rangel Wulff | License: MIT
 /*
 @module alasql
-@version 0.6.3-develop-64605264undefined
+@version 0.6.3-develop-49c15c66undefined
 
 AlaSQL - JavaScript SQL database
 © 2014-2016	Andrey Gershun & Mathias Rangel Wulff
@@ -142,7 +142,7 @@ var alasql = function(sql, params, cb, scope) {
 	Current version of alasql 
  	@constant {string} 
 */
-alasql.version = '0.6.3-develop-64605264undefined';
+alasql.version = '0.6.3-develop-49c15c66undefined';
 
 /**
 	Debug flag
@@ -10591,10 +10591,6 @@ yy.StringValue = function(params) {
 };
 yy.StringValue.prototype.toString = function() {
 	var str = this.value.toString();
-	//增加简单判断
-	if (str.indexOf("'") !== -1) {
-		return '"' + str + '"';
-	}
 	return "'" + this.value.toString().replace(/'/g, "\\'") + "'";
 };
 

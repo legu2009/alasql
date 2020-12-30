@@ -645,10 +645,6 @@ yy.StringValue = function(params) {
 };
 yy.StringValue.prototype.toString = function() {
 	var str = this.value.toString();
-	//增加简单判断
-	if (str.indexOf("'") !== -1) {
-		return '"' + str + '"';
-	}
 	return "'" + this.value.toString().replace(/'/g, "\\'") + "'";
 };
 
