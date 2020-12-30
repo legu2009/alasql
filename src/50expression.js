@@ -769,7 +769,11 @@ yy.UniOp.prototype.toString = function () {
 	}
 	if (this.op === 'NOT') {
 		//s = this.op + '(' + this.right.toString() + ')';
-		s = this.op + '(' + this.right.toString() + ')';
+		if (this.right instanceof yy.NullValue) {
+			s = this.op + ' ' + this.right.toString();
+		} else {
+			s = this.op + '(' + this.right.toString() + ')';
+		}
 	}
 	if (this.op === null) {
 		s = '(' + this.right.toString() + ')';
